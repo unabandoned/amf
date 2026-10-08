@@ -15,7 +15,8 @@ why-forked: >-
   upstream went quiet while carrying a runtime dependency
   (@astronautlabs/bitstream) and a dev tree pinned to TypeScript 4, chai 4,
   razmin and zone.js. Adopted so Renovate keeps that tree current for the tool
-  that ships it.
+  that ships it. Its one runtime dependency, bitstream, is taken from the
+  @unabandoned/bitstream fork through an npm alias.
 
 status: active
 

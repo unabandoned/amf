@@ -36,9 +36,10 @@
 npm i @unabandoned/amf reflect-metadata
 ```
 
-The underlying [`@astronautlabs/bitstream`](https://github.com/astronautlabs/bitstream)
-decorators read type metadata through `Reflect.getMetadata`, so load
-`reflect-metadata` (or another polyfill of that API) once before using this package.
+The underlying bitstream library ([`@unabandoned/bitstream`](https://github.com/unabandoned/bitstream),
+the maintained fork of `@astronautlabs/bitstream`, installed under its original name) reads
+type metadata through `Reflect.getMetadata`, so load `reflect-metadata` (0.1.13+ or 0.2.x, or
+another polyfill of that API) once before using this package.
 
 # Usage
 
