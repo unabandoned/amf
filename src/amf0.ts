@@ -148,7 +148,7 @@ export class ObjectProperty extends BitstreamElement {
 
     @Field((i : ObjectProperty) => i.keyLength, { string: { encoding: 'utf-8' }}) 
     get key(): string { return this._key; }
-    set key(value) { 
+    set key(value : string) { 
         if (typeof value !== 'string')
             throw new Error(`Key must be a string`);
         this._key = value; 
@@ -274,7 +274,7 @@ export class ObjectValue extends ComplexValue {
         return this._properties;
     }
 
-    set properties(value) {
+    set properties(value : ObjectProperty[]) {
         this._properties = value;
         this.buildValue();
     }
@@ -312,7 +312,7 @@ export class TypedObjectValue extends ObjectValue {
         return this._className; 
     }
 
-    set className(value) {
+    set className(value : string) {
         if (typeof value !== 'string')
             throw new TypeError(`Class name must be a string`);
 
@@ -360,13 +360,15 @@ export class EcmaArrayValue<V = any> extends ComplexValue<Map<string, V>> {
     }
 
     
-    @Field((i : ObjectProperty) => 0, { string: { encoding: 'utf-8' }, writtenValue: '' })
-    private endKey = '';
+    // An ECMA array ends like an object does: an empty UTF-8 key (a 16-bit
+    // zero length) followed by the object-end marker, i.e. 00 00 09.
+    @Field(8*2)
+    private endKey = 0;
 
-    @Field(8, { writtenValue: TypeMarker.ObjectEnd })
-    private endMarker = TypeMarker.ObjectEnd;
+    @Field(8)
+    private endMarker : number = TypeMarker.ObjectEnd;
 
-    private set properties(value) {
+    private set properties(value : ObjectProperty[]) {
         this._properties = value;
         this._value = new Map(value.map(prop => [prop.key, prop.value.value]));
     }
@@ -401,7 +403,7 @@ export class StrictArrayValue<T = any> extends ComplexValue<T[]> {
         return this._values;
     }
 
-    private set values(value) {
+    private set values(value : Value[]) {
         this._values = value;
         this._value = value.map(z => z.value);
     }
@@ -434,11 +436,11 @@ export class DateValue extends Value<Date> {
         return this._value;
     }
 
-    private set $value(value) {
+    private set $value(value : number) {
         this._value = Math.floor(value);
     }
 
-    @ReservedLow(8*2, { writtenValue: 0x0000 }) private timeZone : number;
+    @ReservedLow(8*2) private timeZone : number;
 
     get value() {
         return new Date(this.$value);
@@ -452,7 +454,7 @@ export class DateValue extends Value<Date> {
 @Variant<Value>(i => i.marker === TypeMarker.LongString)
 export class LongStringValue extends Value {
     marker = TypeMarker.LongString;
-    @Field(8*4, { writtenValue: (i : StringValue) => Buffer.from(i.value).length }) 
+    @Field(8*4, { writtenValue: (i : LongStringValue) => Buffer.from(i.value).length }) 
     private _length : number;
 
     @Field((i : LongStringValue) => i._length, { string: { encoding: 'utf-8' }}) private $value : string;
@@ -485,7 +487,7 @@ export class MovieClipValue extends Value {
 export class XmlDocumentValue extends Value {
     marker = TypeMarker.XmlDocument;
 
-    @Field(8*4, { writtenValue: (i : StringValue) => Buffer.from(i.value).length }) 
+    @Field(8*4, { writtenValue: (i : XmlDocumentValue) => Buffer.from(i.value).length }) 
     private _length : number;
 
     @Field((i : XmlDocumentValue) => i._length, { string: { encoding: 'utf-8' }}) private $value : string;

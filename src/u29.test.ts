@@ -1,9 +1,10 @@
-import { describe } from 'razmin';
-import { expect } from 'chai';
+import 'reflect-metadata';
+import { describe, it } from 'node:test';
+import * as assert from 'node:assert/strict';
 import { U29Serializer } from './u29';
 import { BitstreamReader, BitstreamWriter, BufferedWritable } from '@astronautlabs/bitstream';
 
-describe('U29Serializer', it => {
+describe('U29Serializer', () => {
     function encode(number : number) {
         let serializer = new U29Serializer();
         let writable = new BufferedWritable();
@@ -19,12 +20,8 @@ describe('U29Serializer', it => {
         reader.addBuffer(Uint8Array.from(bytes));
         let result = serializer.read(reader, undefined, undefined, undefined).next();
         
-        expect(
-            result.done, 
-            `Decoding [${bytes.map(x => `0b${x.toString(2)}`)}]`
-            + ` should be successful without requiring additional data to be read`
-        )
-        .to.be.true;
+        assert.strictEqual(result.done, true, `Decoding [${bytes.map(x => `0b${x.toString(2)}`)}]`
+            + ` should be successful without requiring additional data to be read`);
 
         return result.value;
     }
@@ -100,7 +97,7 @@ describe('U29Serializer', it => {
             let result = decode(bytes);
             if (result === expected)
                 continue;
-            expect(result).to.eql(expected, 
+            assert.deepStrictEqual(result, expected, 
                 `Expected [${bytes.map(x => `0b${x.toString(2)}`).join(', ')}]`
                 + ` to decode to 0b${expected.toString(2)}, not 0b${result.toString(2)}`
             );
@@ -109,6 +106,6 @@ describe('U29Serializer', it => {
 
     it('encodes values correctly', () => {
         for (let example of examples)
-            expect(encode(<number>example[0])).to.eql(<number[]>example[1]);
+            assert.deepStrictEqual(encode(<number>example[0]), <number[]>example[1]);
     });
 });

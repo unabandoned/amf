@@ -1,13 +1,16 @@
 {
-  "name": "@astronautlabs/amf",
+  "name": "@unabandoned/amf",
   "version": "0.0.6",
   "description": "Action Message Format (AMF0/3)",
   "main": "dist/index.js",
   "module": "dist.esm/index.js",
   "types": "dist/index.d.ts",
-  "publishConfig": {
-    "access": "public"
-  },
+  "files": [
+    "dist",
+    "dist.esm",
+    "src",
+    "!src/**/*.test.ts"
+  ],
   "keywords": [
     "actionscript",
     "rtmp",
@@ -16,25 +19,41 @@
     "adobe"
   ],
   "scripts": {
-    "clean": "rimraf dist dist.esm",
-    "build": "npm run clean && tsc -b && tsc -b tsconfig.esm.json",
-    "test": "npm run build && node dist/test",
-    "prepublishOnly": "npm test"
+    "clean": "node -e \"for (const d of ['dist', 'dist.esm', 'build-test']) require('fs').rmSync(d, { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc -p tsconfig.json && tsc -p tsconfig.esm.json",
+    "test": "tsc -p tsconfig.test.json && node --test \"build-test/**/*.test.js\"",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unabandoned/amf.git"
+  },
+  "bugs": {
+    "url": "https://github.com/unabandoned/amf/issues"
+  },
+  "homepage": "https://github.com/unabandoned/amf#readme",
   "author": "Astronaut Labs, LLC",
   "license": "MIT",
-  "devDependencies": {
-    "@types/chai": "^4.3.0",
-    "@types/node": "^17.0.10",
-    "chai": "^4.3.4",
-    "razmin": "^1.1.7",
-    "reflect-metadata": "^0.1.13",
-    "rimraf": "^3.0.2",
-    "source-map-support": "^0.5.21",
-    "typescript": "^4.5.5",
-    "zone.js": "^0.11.4"
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=22.12"
   },
   "dependencies": {
-    "@astronautlabs/bitstream": "^4.0.0"
+    "@astronautlabs/bitstream": "^4.2.2"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.2.3",
+    "@commitlint/config-conventional": "21.2.3",
+    "@types/node": "22.20.5",
+    "reflect-metadata": "0.2.2",
+    "typescript": "7.0.2"
+  },
+  "overrides": {
+    "@astronautlabs/bitstream": {
+      "reflect-metadata": "$reflect-metadata"
+    }
   }
 }
