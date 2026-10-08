@@ -1,10 +1,11 @@
-import { describe } from "razmin";
+import 'reflect-metadata';
+import { describe, it } from 'node:test';
+import * as assert from 'node:assert/strict';
 import { IntVectorValue, Value } from "./amf3";
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { expect } from 'chai';
 
-describe('amf3', it => {
+describe('amf3', () => {
     async function sample(name : string) {
         return await fs.readFile(path.join(__dirname, '..', 'test', 'amf3', `${name}.bin`));
     }
@@ -40,29 +41,25 @@ describe('amf3', it => {
     };
 
     let files = Object.keys(samples);
-    let hasAt = files.some(x => x.startsWith('@'));
-    let _it = it;
     
     //globalThis.BITSTREAM_TRACE = true;
 
     for (let fileName of files) {
         let value = samples[fileName];
-        let isAt = fileName.startsWith('@');
-        let it = hasAt ? (!isAt ? _it.skip : _it.only) : _it;
         
         it(`parses sample '${fileName}' correctly`, async () => {
-            let buf = await sample(fileName.replace(/^@/, ''));
+            let buf = await sample(fileName);
             let parsedValue = Value.deserialize(buf);
-            expect(`${parsedValue.constructor.name}#${JSON.stringify(parsedValue)}`).to.eql(`${value.constructor.name}#${JSON.stringify(value)}`);
-            expect(parsedValue.value).to.eql(value.value);
+            assert.deepStrictEqual(`${parsedValue.constructor.name}#${JSON.stringify(parsedValue)}`, `${value.constructor.name}#${JSON.stringify(value)}`);
+            assert.deepStrictEqual(parsedValue.value, value.value);
         });
     }
 
     it(`builds object from literal correctly`, () => {
-        expect(Value.object({ a: 123, b: 321 }).value).to.eql({ a: 123, b: 321 });
+        assert.deepStrictEqual(Value.object({ a: 123, b: 321 }).value, { a: 123, b: 321 });
     });
 
     it(`builds object from parsed value correctly`, async () => {
-        expect((await parsedSample('simple-object-1')).value).to.eql({ a: 3, b: 7 });
+        assert.deepStrictEqual((await parsedSample('simple-object-1')).value, { a: 3, b: 7 });
     });
 });

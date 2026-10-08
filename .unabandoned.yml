@@ -1,0 +1,26 @@
+schema: 1
+
+package: "@unabandoned/amf"
+
+upstream:
+  repo: astronautlabs/amf
+  reason: "no release since 2022-07 (0.0.6); last commit 2023-06"
+
+summary: >-
+  Reads and writes Adobe's Action Message Format (AMF0 and AMF3), the binary
+  object serialization used by Flash, RTMP and Flash Remoting.
+
+why-forked: >-
+  CyberChef's AMF Encode and AMF Decode operations import it at runtime, and
+  upstream went quiet while carrying a runtime dependency
+  (@astronautlabs/bitstream) and a dev tree pinned to TypeScript 4, chai 4,
+  razmin and zone.js. Adopted so Renovate keeps that tree current for the tool
+  that ships it.
+
+status: active
+
+used-by:
+  - consumer: TheTechNetwork/CyberChef
+    purpose: "AMF Encode/Decode operations."
+
+tags: [amf, amf0, amf3, rtmp, flash, serialization, typescript]

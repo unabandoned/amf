@@ -1,4 +1,16 @@
-# @/amf
+# @unabandoned/amf
+
+> **This is a maintained fork of [astronautlabs/amf][upstream], published as
+> [`@unabandoned/amf`][pkg].** Upstream's last release was 0.0.6 in July 2022.
+> The API and the published layout (`dist/` CommonJS, `dist.esm/` ES modules)
+> are unchanged; the fork exists to keep it and its dependency tree current.
+> See [.unabandoned.yml](.unabandoned.yml).
+>
+> To take it without touching imports, alias it:
+> `"@astronautlabs/amf": "npm:@unabandoned/amf@<version>"`.
+
+[upstream]: https://github.com/astronautlabs/amf
+[pkg]: https://www.npmjs.com/package/@unabandoned/amf
 
 > **[📜 Adobe AMF version 0](https://rtmp.veriskope.com/pdf/amf0-file-format-specification.pdf)**  
 > Adobe's Action Message Format v0
@@ -21,14 +33,18 @@
 # Installation
 
 ```
-npm i @astronautlabs/amf
+npm i @unabandoned/amf reflect-metadata
 ```
+
+The underlying [`@astronautlabs/bitstream`](https://github.com/astronautlabs/bitstream)
+decorators read type metadata through `Reflect.getMetadata`, so load
+`reflect-metadata` (or another polyfill of that API) once before using this package.
 
 # Usage
 
 ```typescript
-
-import { AMF0, AMF3 } from '@astronautlabs/amf';
+import 'reflect-metadata'; // required once, before first use (see below)
+import { AMF0, AMF3 } from '@unabandoned/amf';
 
 // Encode AMF values
 

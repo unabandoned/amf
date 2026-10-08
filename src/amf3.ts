@@ -524,14 +524,14 @@ export class ObjectValue extends ReferenceValue<object> {
                 i.dynamicMembers.length === 0 
                 || i.dynamicMembers[i.dynamicMembers.length - 1].key !== ''
         },
-        presentWhen: i => i.isDynamic, serializer: new AssociativeValueSerializer()
+        presentWhen: (i : any) => i.isDynamic, serializer: new AssociativeValueSerializer()
     })
     private _dynamicMembers : AssociativeValue[] = [];
 
     get dynamicMembers() { return this._dynamicMembers; }
     set dynamicMembers(value) { this._dynamicMembers = value; }
 
-    @Field((i : ObjectValueWithInternalTraits) => i.traits.sealedMemberNames.length, { array: { type: Value }})
+    @Field((i : any) => (i as ObjectValueWithInternalTraits).traits.sealedMemberNames.length, { array: { type: Value }})
     private _values : Value[] = [];
 
     get values() { return this._values; }
@@ -721,7 +721,7 @@ export class ByteArray extends ReferenceValue<Buffer> {
         this.$lengthOrReference = value << 1;
     }
 
-    @Field(i => i.$length)
+    @Field((i : any) => i.$length)
     $value : Buffer;
 
     get value() { return this.isLiteral ? this.$value : undefined; }
@@ -794,7 +794,7 @@ function bytesToDoubleArray(array : Uint8Array) {
 @Variant<Value>(i => [TypeMarker.VectorDouble, TypeMarker.VectorInt, TypeMarker.VectorObject, TypeMarker.VectorUint].includes(i.marker))
 export class VectorValue<T = any> extends ReferenceValue<T> {
 
-    @Field(0, { serializer: new U29Serializer(), writtenValue: i => i.value.length })
+    @Field(0, { serializer: new U29Serializer(), writtenValue: (i : any) => i.value.length })
     protected $lengthOrReference : number;
 
     get isReference() {
@@ -853,7 +853,7 @@ export class IntVectorValue extends VectorValue<Int32Array> {
 
     @Field(i => i.length * 8 * 4)
     get bytes(): Uint8Array { return this._bytes; }
-    set bytes(value) { 
+    set bytes(value : Uint8Array) { 
         this._bytes = value; 
         this._elements = bytesToInt32Array(value);
         this.$lengthOrReference = this._elements.length << 1 | 0x1; 
@@ -876,7 +876,7 @@ export class UIntVectorValue extends VectorValue<Uint32Array> {
 
     @Field(i => i.length * 8 * 4)
     get bytes(): Uint8Array { return this._bytes; }
-    set bytes(value) {
+    set bytes(value : Uint8Array) {
         this._bytes = value; 
         this._elements = bytesToUint32Array(value);
         this.$lengthOrReference = this._elements.length << 1 | 0x1; 
@@ -898,7 +898,7 @@ export class DictionaryEntry extends BitstreamElement {
 @Variant<Value>(i => i.marker === TypeMarker.Dictionary)
 export class DictionaryValue<K = any, V = any> extends ReferenceValue<Map<K,V>> {
     marker = TypeMarker.Dictionary;
-    @Field(0, { serializer: new U29Serializer(), writtenValue: i => i.value.length })
+    @Field(0, { serializer: new U29Serializer(), writtenValue: (i : any) => i.value.length })
     private $lengthOrReference : number;
 
     get isReference() {

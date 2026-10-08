@@ -1,5 +1,6 @@
-import { expect, should } from "chai";
-import { describe } from "razmin";
+import 'reflect-metadata';
+import { describe, it } from 'node:test';
+import * as assert from 'node:assert/strict';
 import { BooleanValue, EcmaArrayValue, ReferenceValue, StrictArrayValue, Value } from "./amf0";
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -14,7 +15,7 @@ let zeroPad = (a : string, length = 2) => {
 let hex = (b : Uint8Array) => Array.from(b).map(b => zeroPad(b.toString(16))).join(' ');
 
 
-describe("amf0", it => {
+describe("amf0", () => {
     async function sample(name : string) {
         return await fs.readFile(path.join(__dirname, '..', 'test', 'amf0', `${name}.bin`));
     }
@@ -45,15 +46,11 @@ describe("amf0", it => {
     };
 
     let files = Object.keys(samples);
-    let hasAt = files.some(x => x.startsWith('@'));
-    let _it = it;
     
     //globalThis.BITSTREAM_TRACE = true;
 
     for (let fileName of files) {
         let valueOrPromise : Value | Promise<Value> = samples[fileName];
-        let isAt = fileName.startsWith('@');
-        let it = hasAt ? (!isAt ? _it.skip : _it.only) : _it;
         
         it(`reads sample '${fileName}' correctly`, async () => {
             let value : Value;
@@ -62,7 +59,7 @@ describe("amf0", it => {
             else
                 value = valueOrPromise;
 
-            let buf = await sample(fileName.replace(/^@/, ''));
+            let buf = await sample(fileName);
             let parsedValue = Value.deserialize(buf);
             let isLargeValue = typeof parsedValue.value === 'string' && parsedValue.value.length > 50000;
 
@@ -71,16 +68,16 @@ describe("amf0", it => {
                 let parsedStr = `${parsedValue.constructor.name}#${JSON.stringify(parsedValue).replace(`${parsedValue.value}`, `...`)}`;
                 let expectedStr = `${value.constructor.name}#${JSON.stringify(value).replace(`${value.value}`, `...`)}`;
 
-                expect(parsedStr).to.equal(expectedStr);
+                assert.strictEqual(parsedStr, expectedStr);
             } else {
-                expect(`${parsedValue.constructor.name}#${JSON.stringify(parsedValue)}`).to.eql(`${value.constructor.name}#${JSON.stringify(value)}`);
+                assert.deepStrictEqual(`${parsedValue.constructor.name}#${JSON.stringify(parsedValue)}`, `${value.constructor.name}#${JSON.stringify(value)}`);
             }
             
             try {
-                expect(parsedValue.value).to.eql(value.value);
+                assert.deepStrictEqual(parsedValue.value, value.value);
             } catch (e) {
                 if (isLargeValue) {
-                    expect(false, "JS representation should match").to.be.true
+                    assert.fail("JS representation should match");
                 }
                 throw e;
             }
@@ -93,9 +90,9 @@ describe("amf0", it => {
             else
                 value = valueOrPromise;
 
-            let expected = await sample(fileName.replace(/^@/, ''));
+            let expected = await sample(fileName);
 
-            expect(hex(value.serialize())).to.eql(hex(expected));
+            assert.deepStrictEqual(hex(value.serialize()), hex(expected));
         });
 
         it(`roundtrips '${fileName}' correctly after reading`, async () => {
@@ -105,10 +102,10 @@ describe("amf0", it => {
             else
                 value = valueOrPromise;
 
-            let expected = await sample(fileName.replace(/^@/, ''));
+            let expected = await sample(fileName);
             let result = Value.deserialize(expected).serialize();
 
-            expect(hex(result)).to.eql(hex(expected));
+            assert.deepStrictEqual(hex(result), hex(expected));
         });
 
         it(`roundtrips '${fileName}' correctly after writing`, async () => {
@@ -120,8 +117,8 @@ describe("amf0", it => {
                 value = valueOrPromise;
             
             let result = Value.deserialize(value.serialize())
-            expect(`${result.constructor.name}#${JSON.stringify(result)}`).to.eql(`${value.constructor.name}#${JSON.stringify(value)}`);
-            expect(result.value).to.eql(value.value);
+            assert.deepStrictEqual(`${result.constructor.name}#${JSON.stringify(result)}`, `${value.constructor.name}#${JSON.stringify(value)}`);
+            assert.deepStrictEqual(result.value, value.value);
         });
     }
 
@@ -129,29 +126,29 @@ describe("amf0", it => {
         // Value.array([ [true, false], new ReferenceValue().with({ index: 0 }) ])
         let ref = <StrictArrayValue> await parsedSample('reference');
 
-        expect(ref.value.length).to.equal(2);
-        expect(ref.value).to.eql([ [true, false], [true, false] ]);
-        expect('values' in ref, "StrictArrayValue#values refactored?").to.be.true;
+        assert.strictEqual(ref.value.length, 2);
+        assert.deepStrictEqual(ref.value, [ [true, false], [true, false] ]);
+        assert.strictEqual('values' in ref, true, "StrictArrayValue#values refactored?");
 
         let values : Value[] = (ref as any).values;
         let arrayValue = values[0].as(StrictArrayValue);
         let refValue = values[1].as(ReferenceValue);
 
-        expect(refValue.index).to.equal(0);
-        expect(refValue.reference).to.equal(arrayValue);
+        assert.strictEqual(refValue.index, 0);
+        assert.strictEqual(refValue.reference, arrayValue);
     });
     it('should roll references correctly', async () => {
         let value = Value.array([ [true, false], [true, false]])
         let buf = value.serialize();
-        expect(hex(buf)).to.equal(hex(await sample('reference')));
+        assert.strictEqual(hex(buf), hex(await sample('reference')));
     });
 
-    describe('Value', it => {
+    describe('Value', () => {
         it('unrolls JS values into appropriate AMF0 values', () => {
             let array = Value.array([ [true, false], [true, false]]);
             let values = StrictArrayValue.elementValues(array);
 
-            expect(values.length).to.equal(2);
+            assert.strictEqual(values.length, 2);
 
             let sub1 = values[0].as<StrictArrayValue>(StrictArrayValue);
             let sub2 = values[1].as<StrictArrayValue>(StrictArrayValue);
@@ -161,13 +158,13 @@ describe("amf0", it => {
             let bool3 = StrictArrayValue.elementValues(sub2)[0];
             let bool4 = StrictArrayValue.elementValues(sub2)[1];
 
-            expect(bool1).to.be.an.instanceOf(BooleanValue);
-            expect(bool2).to.be.an.instanceOf(BooleanValue);
-            expect(bool3).to.be.an.instanceOf(BooleanValue);
-            expect(bool4).to.be.an.instanceOf(BooleanValue);
+            assert.ok(bool1 instanceof BooleanValue);
+            assert.ok(bool2 instanceof BooleanValue);
+            assert.ok(bool3 instanceof BooleanValue);
+            assert.ok(bool4 instanceof BooleanValue);
             
         });
-        it.only('accepts an object with an array and creates correct AMF objects', () => {
+        it('accepts an object with an array and creates correct AMF objects', () => {
             let amf = Value.any({ foo: [ 'bar', 'baz' ]});
         })
     });
