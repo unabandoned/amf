@@ -45,8 +45,8 @@
     "@astronautlabs/bitstream": "npm:@unabandoned/bitstream@^4.3.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "21.2.3",
-    "@commitlint/config-conventional": "21.2.3",
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
     "@types/node": "22.20.5",
     "reflect-metadata": "0.2.2",
     "typescript": "7.0.2"
